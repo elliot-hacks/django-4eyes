@@ -448,8 +448,9 @@ class ApprovalWorkflowEngine:
     
     @staticmethod
     def _send_step_notifications(approval_state, step):
-        """Send notifications to approvers for a step."""
+        """Send notifications to approvers for a step using notification plugins."""
         from django_4eyes.models import Notification
+        from django_4eyes.notifications import registry
         
         if step.auto_approve:
             return
@@ -487,15 +488,31 @@ class ApprovalWorkflowEngine:
                 f"Required Action: {', '.join(step.get_available_actions(approver))}"
             ]
             
+            title = f"Action Required: {obj_summary}"
+            message = "\n".join(message_lines)
+            
+            # Store notification in database
             notifications_data.append({
                 'recipient': approver,
                 'notification_type': 'approval_required',
-                'title': f"Action Required: {obj_summary}",
-                'message': "\n".join(message_lines),
+                'title': title,
+                'message': message,
                 'step': step,
                 'content_type': approval_state.content_type,
                 'object_id': str(approval_state.object_id),
             })
+            
+            # Send via notification plugins
+            NotificationSender.send_to_user(
+                recipient=approver,
+                title=title,
+                message=message,
+                context={
+                    'approval_state': approval_state,
+                    'step': step,
+                    'object_details': obj_details,
+                }
+            )
         
         # Bulk create notifications
         if notifications_data:
