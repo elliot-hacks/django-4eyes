@@ -46,11 +46,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/django-4eyes"
+Homepage = "https://github.com/elliot-hacks/django-4eyes"
 Documentation = "https://django-4eyes.readthedocs.io/"
-Repository = "https://github.com/yourusername/django-4eyes.git"
-Issues = "https://github.com/yourusername/django-4eyes/issues"
-Changelog = "https://github.com/yourusername/django-4eyes/blob/main/CHANGELOG.md"
+Repository = "https://github.com/elliot-hacks/django-4eyes.git"
+Issues = "https://github.com/elliot-hacks/django-4eyes/issues"
+Changelog = "https://github.com/elliot-hacks/django-4eyes/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 packages = ["django_4eyes", "django_4eyes.models"]

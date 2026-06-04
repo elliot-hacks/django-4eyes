@@ -159,6 +159,9 @@ class FourEyeModel(ApprovalMixin):
             created_by = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     """
     
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+    
     class Meta:
         abstract = True
-        ordering = ['-id']
+        ordering = ['-created_at']

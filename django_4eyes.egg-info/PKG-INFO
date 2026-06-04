@@ -2,16 +2,16 @@ Metadata-Version: 2.4
 Name: django-4eyes
 Version: 1.0.0
 Summary: Enterprise-grade approval workflow engine for Django
-Home-page: https://github.com/yourusername/django-4eyes
+Home-page: https://github.com/elliot-hacks/django-4eyes
 Author: Your Name
 Author-email: Your Name <your.email@example.com>
 Maintainer-email: Your Name <your.email@example.com>
 License: MIT
-Project-URL: Homepage, https://github.com/yourusername/django-4eyes
+Project-URL: Homepage, https://github.com/elliot-hacks/django-4eyes
 Project-URL: Documentation, https://django-4eyes.readthedocs.io/
-Project-URL: Repository, https://github.com/yourusername/django-4eyes.git
-Project-URL: Issues, https://github.com/yourusername/django-4eyes/issues
-Project-URL: Changelog, https://github.com/yourusername/django-4eyes/blob/main/CHANGELOG.md
+Project-URL: Repository, https://github.com/elliot-hacks/django-4eyes.git
+Project-URL: Issues, https://github.com/elliot-hacks/django-4eyes/issues
+Project-URL: Changelog, https://github.com/elliot-hacks/django-4eyes/blob/main/CHANGELOG.md
 Keywords: django,approval,workflow,four-eyes,maker-checker,enterprise
 Classifier: Development Status :: 4 - Beta
 Classifier: Framework :: Django

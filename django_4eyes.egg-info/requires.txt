@@ -1,1 +1,2 @@
 Django>=3.2
+setuptools==65.6.3

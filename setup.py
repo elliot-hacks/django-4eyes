@@ -17,11 +17,11 @@ LONG_DESCRIPTION = long_description
 LONG_DESCRIPTION_CONTENT_TYPE = 'text/markdown'
 AUTHOR = 'Your Name'
 AUTHOR_EMAIL = 'your.email@example.com'
-URL = 'https://github.com/yourusername/django-4eyes'
+URL = 'https://github.com/elliot-hacks/django-4eyes'
 PROJECT_URLS = {
-    'Bug Tracker': 'https://github.com/yourusername/django-4eyes/issues',
+    'Bug Tracker': 'https://github.com/elliot-hacks/django-4eyes/issues',
     'Documentation': 'https://django-4eyes.readthedocs.io/',
-    'Source': 'https://github.com/yourusername/django-4eyes',
+    'Source': 'https://github.com/elliot-hacks/django-4eyes',
 }
 LICENSE = 'MIT'
 CLASSIFIERS = [
