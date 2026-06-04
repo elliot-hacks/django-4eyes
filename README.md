@@ -192,6 +192,121 @@ APPROVAL_ALLOW_SUPERUSER_OVERRIDE = True
 
 # Optional: Custom user model
 AUTH_USER_MODEL = 'myapp.CustomUser'
+
+# Optional: Enable specific notification plugins
+# Default: ['email', 'django_messages']
+FOUREYES_ENABLED_NOTIFICATION_PLUGINS = ['email', 'django_messages']
+
+# Optional: Email configuration for notifications
+FOUREYES_EMAIL_FROM = 'noreply@yourdomain.com'
+
+# Gmail SMTP Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@gmail.com'
+EMAIL_HOST_PASSWORD = 'your-app-password'  # Use App Password, not regular password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+```
+
+## Notification Plugins
+
+django-4eyes includes a flexible notification plugin system that supports multiple notification channels:
+
+### Available Plugins
+
+1. **Email Plugin** (`email`) - Sends approval notifications via email
+2. **Django Messages Plugin** (`django_messages`) - Uses Django's messages framework
+
+### Configuring Notifications
+
+```python
+# settings.py
+
+# Enable only email notifications
+FOUREYES_ENABLED_NOTIFICATION_PLUGINS = ['email']
+
+# Enable only Django messages
+FOUREYES_ENABLED_NOTIFICATION_PLUGINS = ['django_messages']
+
+# Enable both (default)
+FOUREYES_ENABLED_NOTIFICATION_PLUGINS = ['email', 'django_messages']
+
+# Set the from email address
+FOUREYES_EMAIL_FROM = 'approvals@yourcompany.com'
+```
+
+### Gmail SMTP Setup
+
+For Gmail, you need to use an App Password:
+
+1. Enable 2-Factor Authentication on your Google account
+2. Go to https://myaccount.google.com/apppasswords
+3. Create a new app password for "Mail"
+4. Use this password in `EMAIL_HOST_PASSWORD`
+
+```python
+# settings.py
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@gmail.com'
+EMAIL_HOST_PASSWORD = 'xxxx-xxxx-xxxx-xxxx'  # 16-character app password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+FOUREYES_EMAIL_FROM = EMAIL_HOST_USER
+```
+
+### Sending Custom Notifications
+
+```python
+from django_4eyes.notifications import NotificationSender
+
+# Send to a single user
+NotificationSender.send_to_user(
+    recipient=user,
+    title="Urgent: Approval Required",
+    message="Please review the purchase request #12345"
+)
+
+# Send to a group
+NotificationSender.send_to_group(
+    group=finance_team,
+    title="Budget Approval Needed",
+    message="The Q4 budget requires your approval"
+)
+
+# Send with specific plugins only
+NotificationSender.send_to_user(
+    recipient=user,
+    title="Notification",
+    message="This is email only",
+    plugins=['email']  # Only use email plugin
+)
+```
+
+### Creating Custom Notification Plugins
+
+```python
+from django_4eyes.notifications import NotificationPlugin, registry
+
+class SlackNotificationPlugin(NotificationPlugin):
+    plugin_id = 'slack'
+    name = 'Slack Notification'
+    description = 'Send approval notifications to Slack'
+    enabled_by_default = True
+    
+    def send(self, recipient, title, message, context=None, **kwargs):
+        # Your Slack integration code here
+        slack_client.chat_postMessage(
+            channel=recipient.slack_channel,
+            text=f"{title}: {message}"
+        )
+        return True
+
+# Register the plugin
+registry.register(SlackNotificationPlugin())
 ```
 
 ## Advanced Usage

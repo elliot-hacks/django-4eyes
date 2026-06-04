@@ -503,6 +503,7 @@ class ApprovalWorkflowEngine:
             })
             
             # Send via notification plugins
+            from django_4eyes.notifications.sender import NotificationSender
             NotificationSender.send_to_user(
                 recipient=approver,
                 title=title,
