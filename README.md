@@ -1,0 +1,318 @@
+# django-4eyes
+
+A reusable Django approval workflow engine that brings enterprise-grade four-eyes principle (maker-checker) to your Django models.
+
+## Features
+
+- **Easy Integration**: Simply inherit from `FourEyeModel` to add approval capabilities to any model
+- **Flexible Workflows**: Define multi-step approval processes with different approvers
+- **Template-based**: Create reusable approval templates and assign them to models
+- **Auto-triggering**: Approval workflows automatically start when objects are created
+- **Notification System**: Built-in notifications for approvers
+- **Audit Trail**: Complete history of all approval actions
+- **Group & User Approvers**: Assign approval steps to individual users or groups
+- **Auto-approve Steps**: Support for automatic approval steps
+- **Change Requests**: Approvers can request changes and resume workflows
+
+## Installation
+
+```bash
+pip install django-4eyes
+```
+
+Add to your `INSTALLED_APPS` in `settings.py`:
+
+```python
+INSTALLED_APPS = [
+    # ... other apps
+    'django_4eyes',
+]
+```
+
+Run migrations:
+
+```bash
+python manage.py migrate
+```
+
+## Quick Start
+
+### 1. Tag Your Model
+
+```python
+from django.db import models
+from django_4eyes.models import FourEyeModel
+
+class PurchaseRequest(FourEyeModel, models.Model):
+    title = models.CharField(max_length=200)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+    created_by = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    
+    # FourEyeModel adds: is_approved, is_rejected fields
+    # and an 'all_objects' manager to access pending items
+```
+
+### 2. Create Approval Template
+
+```python
+from django.contrib.auth.models import Group, User
+from django_4eyes.models import ApprovalTemplate, ApprovalStep
+from django.contrib.contenttypes.models import ContentType
+
+# Get the content type for your model
+pr_ct = ContentType.objects.get_for_model(PurchaseRequest)
+
+# Create template
+template = ApprovalTemplate.objects.create(
+    name="Purchase Request Approval",
+    description="Standard approval workflow for purchase requests",
+    is_active=True,
+    auto_start_approval=True
+)
+template.content_type.add(pr_ct)
+
+# Add approval steps
+# Step 1: Department Manager
+manager_group = Group.objects.get(name="Department Managers")
+ApprovalStep.objects.create(
+    template=template,
+    order=1,
+    title="Department Manager Approval",
+    approver_group=manager_group,
+    can_edit=False,
+    allow_comments=True
+)
+
+# Step 2: Finance Manager
+finance_manager = User.objects.get(username='finance_manager')
+ApprovalStep.objects.create(
+    template=template,
+    order=2,
+    title="Finance Manager Approval",
+    approver_user=finance_manager,
+    can_edit=False,
+    allow_comments=True
+)
+
+# Step 3: Auto-approve for small amounts (optional)
+ApprovalStep.objects.create(
+    template=template,
+    order=3,
+    title="System Verification",
+    auto_approve=True
+)
+```
+
+### 3. Create and Submit for Approval
+
+```python
+# Create a purchase request
+pr = PurchaseRequest.objects.create(
+    title="New Laptops",
+    amount=5000.00,
+    description="Need 5 laptops for new developers",
+    created_by=request.user
+)
+
+# Approval workflow automatically starts!
+# The object is now pending approval and won't appear in default queries
+
+# Check approval status
+print(pr.is_approved)  # False
+print(pr.is_rejected)  # False
+
+# Access via approval state
+from django_4eyes.models import ApprovalState
+approval = ApprovalState.objects.get(
+    content_type=ContentType.objects.get_for_model(PurchaseRequest),
+    object_id=pr.id
+)
+print(approval.current_step)  # First step
+```
+
+### 4. Approve or Reject
+
+```python
+from django_4eyes.engine import ApprovalWorkflowEngine
+
+# Get the approval state
+approval = ApprovalState.objects.get(object_id=pr.id)
+
+# Check if user can approve
+if approval.can_user_take_action(request.user):
+    # Approve
+    approval = ApprovalWorkflowEngine.advance_approval(
+        approval_state=approval,
+        actor_user=request.user,
+        comment="Approved - within budget"
+    )
+    
+    # Or reject
+    # approval = ApprovalWorkflowEngine.reject_approval(
+    #     approval_state=approval,
+    #     actor_user=request.user,
+    #     comment="Need more justification"
+    # )
+    
+    # Or request changes
+    # approval = ApprovalWorkflowEngine.request_changes(
+    #     approval_state=approval,
+    #     actor_user=request.user,
+    #     comment="Please provide vendor quotes"
+    # )
+```
+
+### 5. Querying Objects
+
+```python
+# Default manager only shows approved objects
+approved_prs = PurchaseRequest.objects.all()  # Only approved
+
+# Access all objects including pending/rejected
+all_prs = PurchaseRequest.all_objects.all()
+
+# Filter by approval status
+pending = PurchaseRequest.objects.pending()
+approved = PurchaseRequest.objects.approved()
+rejected = PurchaseRequest.objects.rejected()
+```
+
+## Configuration
+
+Add to your `settings.py`:
+
+```python
+# Optional: Allow superusers to approve any step
+APPROVAL_ALLOW_SUPERUSER_OVERRIDE = True
+
+# Optional: Custom user model
+AUTH_USER_MODEL = 'myapp.CustomUser'
+```
+
+## Advanced Usage
+
+### Conditional Approval Templates
+
+```python
+# Different templates for different amounts
+template_small = ApprovalTemplate.objects.create(name="Small Purchase (< $1000)")
+template_large = ApprovalTemplate.objects.create(name="Large Purchase (>= $1000)")
+
+# Assign based on business logic in your view/serializer
+if pr.amount < 1000:
+    template_small.content_type.add(pr_ct)
+else:
+    template_large.content_type.add(pr_ct)
+```
+
+### Custom Approval Logic
+
+```python
+class CustomPurchaseRequest(FourEyeModel, models.Model):
+    # ... fields ...
+    
+    def clean(self):
+        super().clean()
+        # Add custom validation
+        if self.amount > 10000 and not self.is_approved:
+            raise ValidationError("Large purchases require pre-approval")
+```
+
+### Accessing Approval History
+
+```python
+approval = ApprovalState.objects.get(object_id=pr.id)
+for action in approval.actions_history:
+    print(f"{action['username']} {action['action']} at {action['timestamp']}")
+    if action.get('comment'):
+        print(f"  Comment: {action['comment']}")
+```
+
+### Notifications
+
+The system automatically creates notifications for approvers. Access them via:
+
+```python
+from django_4eyes.models import Notification
+
+pending_approvals = Notification.objects.filter(
+    recipient=request.user,
+    notification_type='approval_required',
+    acted=False
+)
+```
+
+## API Reference
+
+### FourEyeModel
+
+Base model that adds approval capabilities:
+- `is_approved`: Boolean field indicating approval status
+- `is_rejected`: Boolean field indicating rejection status
+- `objects`: Manager that only shows approved objects
+- `all_objects`: Manager that shows all objects
+
+### ApprovalTemplate
+
+Defines a reusable approval workflow:
+- `name`: Template name
+- `content_type`: M2M to ContentType (which models use this)
+- `is_active`: Whether template is active
+- `auto_start_approval`: Auto-start workflow on object creation
+
+### ApprovalStep
+
+Individual step in an approval workflow:
+- `template`: ForeignKey to ApprovalTemplate
+- `order`: Step order (1-based)
+- `approver_user`: Specific user who can approve
+- `approver_group`: Group whose members can approve
+- `auto_approve`: Skip this step automatically
+- `can_edit`: Allow approver to edit the object
+- `allow_comments`: Allow approver to add comments
+
+### ApprovalState
+
+Tracks approval progress for a specific object:
+- `content_type`: Type of object being approved
+- `object_id`: ID of the object
+- `template`: The approval template being used
+- `current_step`: Current step in the process
+- `is_approved`: Whether fully approved
+- `is_rejected`: Whether rejected
+- `actions_history`: JSON field with all actions taken
+
+### ApprovalWorkflowEngine
+
+Main class for approval operations:
+- `advance_approval()`: Move to next step or complete
+- `reject_approval()`: Reject and cancel the request
+- `request_changes()`: Request changes and keep current step
+- `restart_approval_process()`: Restart after amendments
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Support
+
+For issues and questions:
+- GitHub Issues: https://github.com/yourusername/django-4eyes/issues
+- Documentation: https://django-4eyes.readthedocs.io
+
+## Changelog
+
+### 1.0.0
+- Initial release with core approval workflow functionality
+- Support for multi-step approvals
+- Notification system
+- Audit trail
