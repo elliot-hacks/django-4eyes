@@ -15,8 +15,8 @@ VERSION = '1.0.0'
 DESCRIPTION = 'Enterprise-grade approval workflow engine for Django'
 LONG_DESCRIPTION = long_description
 LONG_DESCRIPTION_CONTENT_TYPE = 'text/markdown'
-AUTHOR = 'Your Name'
-AUTHOR_EMAIL = 'your.email@example.com'
+AUTHOR = 'Elliot Hacks'
+AUTHOR_EMAIL = 'thisguyhack@gmail.com'
 URL = 'https://github.com/elliot-hacks/django-4eyes'
 PROJECT_URLS = {
     'Bug Tracker': 'https://github.com/elliot-hacks/django-4eyes/issues',

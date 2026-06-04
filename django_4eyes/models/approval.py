@@ -403,15 +403,15 @@ class ApprovalState(models.Model):
         if not self.actions_history:
             return False
         
-        has_changes_requested = False
+        changes_requested = False
         for action in reversed(self.actions_history):
             if action.get('action') == 'changes_requested':
-                has_changes_requested = True
+                changes_requested = True
             elif action.get('action') in ['restarted', 'approved']:
-                has_changes_requested = False
+                changes_requested = False
                 break
         
-        return has_pending_changes
+        return changes_requested
     
     def get_pending_changes_info(self):
         """Get information about pending changes."""
