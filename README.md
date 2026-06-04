@@ -306,7 +306,7 @@ MIT License - see LICENSE file for details
 ## Support
 
 For issues and questions:
-- GitHub Issues: https://github.com/yourusername/django-4eyes/issues
+- GitHub Issues: https://github.com/elliot-hacks/django-4eyes/issues
 - Documentation: https://django-4eyes.readthedocs.io
 
 ## Changelog

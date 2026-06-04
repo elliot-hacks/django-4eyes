@@ -1,0 +1,116 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-4eyes"
+version = "1.0.0"
+description = "Enterprise-grade approval workflow engine for Django"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+maintainers = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+keywords = [
+    "django",
+    "approval",
+    "workflow",
+    "four-eyes",
+    "maker-checker",
+    "enterprise"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.1",
+    "Framework :: Django :: 4.2",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "Django>=3.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/django-4eyes"
+Documentation = "https://django-4eyes.readthedocs.io/"
+Repository = "https://github.com/yourusername/django-4eyes.git"
+Issues = "https://github.com/yourusername/django-4eyes/issues"
+Changelog = "https://github.com/yourusername/django-4eyes/blob/main/CHANGELOG.md"
+
+[tool.setuptools]
+packages = ["django_4eyes", "django_4eyes.models"]
+
+[tool.setuptools.package-data]
+django_4eyes = ["*.md", "*.txt"]
+
+[tool.flake8]
+max-line-length = 100
+exclude = [
+    ".git",
+    "__pycache__",
+    "dist",
+    "build",
+    "*.egg-info",
+    "migrations",
+]
+ignore = ["E203", "W503"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip = ["migrations", ".venv", "venv"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "-v --cov=django_4eyes --cov-report=html"
+
+[tool.coverage.run]
+source = ["django_4eyes"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __str__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
