@@ -41,6 +41,10 @@ Dynamic: requires-python
 # django-4eyes
 
 A reusable Django approval workflow engine that brings enterprise-grade four-eyes principle (maker-checker) to your Django models.
+***
+![FourEyes](django_4eyes/static/img/logo.png)
+***
+
 
 ## Features
 

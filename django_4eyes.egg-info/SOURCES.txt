@@ -15,3 +15,4 @@ django_4eyes/models/__init__.py
 django_4eyes/models/approval.py
 django_4eyes/models/base.py
 django_4eyes/models/notification.py
+tests/test_models.py
