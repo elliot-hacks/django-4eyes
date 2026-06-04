@@ -1,10 +1,46 @@
+Metadata-Version: 2.4
+Name: django-4eyes
+Version: 1.0.0
+Summary: Enterprise-grade approval workflow engine for Django
+Home-page: https://github.com/yourusername/django-4eyes
+Author: Your Name
+Author-email: Your Name <your.email@example.com>
+Maintainer-email: Your Name <your.email@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/yourusername/django-4eyes
+Project-URL: Documentation, https://django-4eyes.readthedocs.io/
+Project-URL: Repository, https://github.com/yourusername/django-4eyes.git
+Project-URL: Issues, https://github.com/yourusername/django-4eyes/issues
+Project-URL: Changelog, https://github.com/yourusername/django-4eyes/blob/main/CHANGELOG.md
+Keywords: django,approval,workflow,four-eyes,maker-checker,enterprise
+Classifier: Development Status :: 4 - Beta
+Classifier: Framework :: Django
+Classifier: Framework :: Django :: 3.2
+Classifier: Framework :: Django :: 4.0
+Classifier: Framework :: Django :: 4.1
+Classifier: Framework :: Django :: 4.2
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: Django>=3.2
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-python
+
 # django-4eyes
 
 A reusable Django approval workflow engine that brings enterprise-grade four-eyes principle (maker-checker) to your Django models.
-***
-![FourEyes](django_4eyes/static/img/logo.png)
-***
-
 
 ## Features
 
