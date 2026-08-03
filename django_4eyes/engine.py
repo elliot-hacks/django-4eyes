@@ -8,6 +8,7 @@ all approval workflow operations.
 import logging
 from django.db import transaction
 from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils import timezone
 from django.conf import settings

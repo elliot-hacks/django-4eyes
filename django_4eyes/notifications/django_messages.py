@@ -3,14 +3,22 @@ Django Messages notification plugin for django-4eyes.
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.contrib.messages.storage import default_storage
+from django.core.cache import cache
 
 from django_4eyes.notifications.base import NotificationPlugin
 
 logger = logging.getLogger(__name__)
+
+# django.contrib.messages storage backends (session/cookie) require a live
+# request to attach to, but notifications are sent outside the request/response
+# cycle (e.g. from signal handlers, background jobs). We stash pending
+# messages in the cache instead, keyed per user, and let callers drain them
+# via get_messages_for_user() whenever a request is available.
+CACHE_KEY_PREFIX = 'django_4eyes:messages:'
+CACHE_TIMEOUT = 60 * 60 * 24 * 7  # 7 days
 
 
 class DjangoMessagesNotificationPlugin(NotificationPlugin):
@@ -64,17 +72,20 @@ class DjangoMessagesNotificationPlugin(NotificationPlugin):
             # Get message level from kwargs or context
             level = kwargs.get('level', 'info')
             message_level = self.LEVELS.get(level.lower(), messages.INFO)
-            
+
             # Format the message
             formatted_message = self._format_message(title, message, context)
-            
-            # Store message using Django's message storage
-            # Note: We need to use the storage directly since we're not in a request context
-            storage = default_storage
-            
-            # Add message to storage
-            storage.add(recipient, message_level, formatted_message)
-            
+
+            # Queue the message in the cache for this user, to be drained
+            # the next time a request-bound consumer calls get_messages_for_user()
+            cache_key = self._cache_key(recipient)
+            stored_messages = cache.get(cache_key, [])
+            stored_messages.append({
+                'level': message_level,
+                'message': formatted_message,
+            })
+            cache.set(cache_key, stored_messages, CACHE_TIMEOUT)
+
             logger.info(f"Django message stored for user {recipient.username}: {title}")
             return True
             
@@ -130,21 +141,28 @@ class DjangoMessagesNotificationPlugin(NotificationPlugin):
         return True
     
     @staticmethod
-    def get_messages_for_user(user: User):
+    def _cache_key(user: User) -> str:
+        return f'{CACHE_KEY_PREFIX}{user.pk}'
+
+    @staticmethod
+    def get_messages_for_user(user: User, clear: bool = True) -> List[Dict[str, Any]]:
         """
         Get stored messages for a user.
-        
+
         This is useful for retrieving messages that were stored
-        but not yet displayed.
-        
+        but not yet displayed, e.g. from a view or context processor
+        that then forwards them into django.contrib.messages for the
+        current request.
+
         Args:
             user: The user to get messages for
-            
+            clear: Whether to remove the messages from storage after reading
+
         Returns:
-            List of stored messages
+            List of dicts with 'level' and 'message' keys
         """
-        storage = default_storage
-        # Note: This is a simplified implementation
-        # In practice, you might need to implement a custom storage backend
-        # that supports retrieving messages outside of a request context
-        return []
+        cache_key = DjangoMessagesNotificationPlugin._cache_key(user)
+        stored_messages = cache.get(cache_key, [])
+        if clear and stored_messages:
+            cache.delete(cache_key)
+        return stored_messages

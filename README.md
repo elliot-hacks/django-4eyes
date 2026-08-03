@@ -217,7 +217,25 @@ django-4eyes includes a flexible notification plugin system that supports multip
 ### Available Plugins
 
 1. **Email Plugin** (`email`) - Sends approval notifications via email
-2. **Django Messages Plugin** (`django_messages`) - Uses Django's messages framework
+2. **Django Messages Plugin** (`django_messages`) - Queues in-app notifications
+
+Note: notifications are typically sent outside of a request/response cycle
+(e.g. from signal handlers), so the Django Messages plugin can't attach
+directly to `django.contrib.messages`, which needs a live request. Instead it
+queues messages in the cache per-recipient. Drain them for the current user
+wherever you have a request (e.g. in a context processor or middleware) and
+forward them into `django.contrib.messages` for display:
+
+```python
+from django.contrib import messages
+from django_4eyes.notifications.django_messages import DjangoMessagesNotificationPlugin
+
+def inject_foureyes_messages(request):
+    if request.user.is_authenticated:
+        for item in DjangoMessagesNotificationPlugin.get_messages_for_user(request.user):
+            messages.add_message(request, item['level'], item['message'])
+    return {}
+```
 
 ### Configuring Notifications
 

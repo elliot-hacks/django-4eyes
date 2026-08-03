@@ -22,3 +22,7 @@ DATABASES = {
 USE_TZ = True
 
 APPROVAL_ALLOW_SUPERUSER_OVERRIDE = True
+
+EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@example.com'
+FOUREYES_EMAIL_FROM = 'approvals@example.com'
